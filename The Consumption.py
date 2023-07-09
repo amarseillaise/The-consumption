@@ -662,17 +662,17 @@ main_window.geometry('300x200')
 main_window.resizable(False, False)
 main_window.title('Выберите категорию расхода')
 
-corrug_consumption_btn = tk.Button(
-    main_window,
-    text="Упаковка",
-    width=w - 15,
-    command=corr_window
-)
-corrug_consumption_btn.pack(
-    ipadx=5,
-    ipady=5,
-    expand=True
-)
+# corrug_consumption_btn = tk.Button(
+#     main_window,
+#     text="Упаковка",
+#     width=w - 15,
+#     command=corr_window
+# )
+# corrug_consumption_btn.pack(
+#     ipadx=5,
+#     ipady=5,
+#     expand=True
+# )
 
 raw_consumption_btn = tk.Button(
     main_window,

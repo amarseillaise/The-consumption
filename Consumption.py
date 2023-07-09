@@ -1,10 +1,33 @@
+import tkinter.messagebox
 from openpyxl.styles import Font
 import openpyxl
 import datetime
+from Progress_bar_window import ProgressBar
+
+
+def show_error_day_detecting(type_of_date):
+    if type_of_date == "y":
+        tkinter.messagebox.showerror("Ошибка!",
+                                     "Не удалось найти ячейку с текущим годом в целевом файле.\n\n Год должен "
+                                     "располагаться на второй строчке в целевом файле.")
+    elif type_of_date == "m":
+        tkinter.messagebox.showerror("Ошибка!",
+                                     "Не удалось найти ячейку с текущим месяцем в целевом файле.\n\n Месяц должен "
+                                     "располагаться на первой строчке в целевом файле и называться, например"
+                                     " 'January' или 'Январь', если нам нужен первый месяц года.")
+    elif type_of_date == "d":
+        tkinter.messagebox.showerror("Ошибка!",
+                                     "Не удалось найти ячейку с текущим днём в целевом файле.\n\n День должен "
+                                     "располагаться на третьей строчке в целевом файле.")
+    else:
+        tkinter.messagebox.showerror("Ошибка!",
+                                     "Не удалось найти ячейку с текущей датой. Проверьте, не съехали ли где-нибудь"
+                                     " ячейки в файле")
+    exit()
 
 
 def get_postfactum(corr):
-    
+
     current_year = int(datetime.datetime.today().strftime("%Y"))
     current_month = int(datetime.datetime.today().strftime("%m"))
     current_day = int(datetime.datetime.today().strftime("%d"))
@@ -21,12 +44,19 @@ def get_postfactum(corr):
         corrug_corrug = corrug["КАРТОН"]
     except KeyError:
         corrug_corrug = corrug["Сырье"]
-#####################################################################################################
-    for i in range(7, corrug_corrug.max_column):  # Определяем год
+    #####################################################################################################
+    val = -1
+
+    for i in range(1, corrug_corrug.max_column):  # Определяем год
         val = corrug_corrug.cell(row=2, column=i).value
         if val is not None:
-            if int(val) == int(current_year):
-                break
+            try:
+                if int(val) == int(current_year):
+                    break
+            except ValueError:
+                pass
+    if not val or int(val) != int(current_year):
+        show_error_day_detecting("y")
 
     for j in range(i, corrug_corrug.max_column):  # Определяем месяц
         val = corrug_corrug.cell(row=1, column=j).value
@@ -58,12 +88,18 @@ def get_postfactum(corr):
             if val == current_month:
                 break
 
+    if not val or val != current_month:
+        show_error_day_detecting("m")
+
     for k in range(j, j + 27):  # Определяем день
         val = corrug_corrug.cell(row=3, column=k).value
         if int(val) == int(current_day):
             day = k
             break
-#####################################################################################################
+
+    if not val or int(val) != int(current_day):
+        show_error_day_detecting("d")
+    #####################################################################################################
     collected_data = [[], []]
 
     for i in range(2, corrug_RMPA.max_row):
@@ -74,7 +110,7 @@ def get_postfactum(corr):
         if val_SKU is not None:
             collected_data[0].append(SKU_self)
             collected_data[1].append(val_SKU)
-#####################################################################################################
+    #####################################################################################################
     for i in range(1, corrug_f.max_row):
 
         val = str(corrug_corrug.cell(row=i, column=2).value)
@@ -84,22 +120,26 @@ def get_postfactum(corr):
 
                 act_sku = collected_data[0][j]
                 act_qnt = int(collected_data[1][j])
-                
+
                 # For corrug
 
                 if 'КАРТОН' in corrug.get_sheet_names():
 
                     if str(val) == str(act_sku):
                         if corrug_corrug.cell(row=i + 2, column=day - 1).value is not None:
-                            corrug_f.cell(row=i - 1, column=day).value = int(corrug_corrug.cell(row=i, column=day - 1).value) + int(corrug_corrug.cell(row=i + 2, column=day - 1).value) - act_qnt
+                            corrug_f.cell(row=i - 1, column=day).value = int(
+                                corrug_corrug.cell(row=i, column=day - 1).value) + int(
+                                corrug_corrug.cell(row=i + 2, column=day - 1).value) - act_qnt
                         else:
-                            corrug_f.cell(row=i - 1, column=day).value = int(corrug_corrug.cell(row=i, column=day - 1).value) - act_qnt
+                            corrug_f.cell(row=i - 1, column=day).value = int(
+                                corrug_corrug.cell(row=i, column=day - 1).value) - act_qnt
                         if corrug_f.cell(row=i - 1, column=day).value is not None:
                             if int(corrug_f.cell(row=i - 1, column=day).value) < 0:
                                 corrug_f.cell(row=i - 1, column=day).font = Font(
                                     color='7030A0', bold=False, size=9, name="Arial")
                             else:
-                                corrug_f.cell(row=i - 1, column=day).font = Font(color='C00000', bold=False, size=9, name="Arial")
+                                corrug_f.cell(row=i - 1, column=day).font = Font(color='C00000', bold=False, size=9,
+                                                                                 name="Arial")
                         corrug_f.cell(row=i, column=day).font = Font(bold=True, size=9, name="Arial")
 
                     # For raw
@@ -108,7 +148,8 @@ def get_postfactum(corr):
                     if corrug_f.cell(row=i + 1, column=day).value is not None:
                         if corrug_corrug.cell(row=i + 3, column=day - 1).value is not None:
                             corrug_f.cell(row=i + 1, column=day).value = int(
-                                corrug_corrug.cell(row=i + 2, column=day - 1).value) + corrug_corrug.cell(row=i + 3, column=day - 1).value - act_qnt
+                                corrug_corrug.cell(row=i + 2, column=day - 1).value) + corrug_corrug.cell(row=i + 3,
+                                                                                                          column=day - 1).value - act_qnt
                         else:
                             corrug_f.cell(row=i + 1, column=day).value = int(
                                 corrug_corrug.cell(row=i + 2, column=day - 1).value) - act_qnt
