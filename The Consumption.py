@@ -3,10 +3,10 @@ from tkinter import filedialog, Checkbutton, BooleanVar, messagebox
 from tkinter.ttk import Label, Combobox
 import os
 import datetime
-from Corrug import get_consumtion
-from Demand import get_contact
-from Consumption import get_postfactum
-from DemandRaw import getRawConsumption
+from intake_by_plan_corrug_calculate import get_consumtion
+from intake_by_forecast_corrug_calculate import get_contact
+from fact_intake_calculate import get_postfactum
+from demand_by_sap_raw_film_intake_calculate import getRawConsumption
 
 import openpyxl
 

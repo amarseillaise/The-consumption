@@ -11,7 +11,7 @@ def getRawConsumption(raw_file):
     day_array = [[], []]
     required_dates = [[], []]
 
-    for j in os.listdir(path='ConsupmtionPerWeek'):  # collecting week and day from folder with SAP_load
+    for j in os.listdir(path='WeeklyIntakeBySAP'):  # collecting week and day from folder with SAP_load
         day_array[0].append(str(j[0:4]))
         day_array[1].append(str(j[5:7]))
 
@@ -21,14 +21,14 @@ def getRawConsumption(raw_file):
             if str(val) in day_array[0]:
                 break
 
-    for j in range(i, raw_s.max_column):   # detecting coordinates in raw file (weak)
+    for j in range(i, raw_s.max_column):  # detecting coordinates in raw file (weak)
         val = str(raw_s.cell(row=2, column=j).value)
         if val in day_array[1] and val not in required_dates[1]:
             required_dates[0].append(j)
             required_dates[1].append(val)
 
-    for raw_demand_path in os.listdir(path='ConsupmtionPerWeek'):  # Here begin the main cycle
-        demand = openpyxl.load_workbook(os.getcwd() + '/ConsupmtionPerWeek/' + raw_demand_path, data_only=True)
+    for raw_demand_path in os.listdir(path='WeeklyIntakeBySAP'):  # Here begin the main cycle
+        demand = openpyxl.load_workbook(os.getcwd() + '/WeeklyIntakeBySAP/' + raw_demand_path, data_only=True)
         demand_s = demand.worksheets[0]
         collected_data = [[], [], []]
 
@@ -41,7 +41,7 @@ def getRawConsumption(raw_file):
                 collected_data[2].append(curr_quant)
 
         for i in range(2, raw_s.max_row):  # 5
-            
+
             val = raw_s.cell(row=i, column=2).value
 
             if str(val) in str(collected_data[1]):
@@ -56,19 +56,19 @@ def getRawConsumption(raw_file):
                     if str(val) == str(act_sku):
                         for d in range(7):
                             if raw_s.cell(row=i - 2,
-                                                  column=required_dates[0][
-                                                             required_dates[1].index(
-                                                                 act_date)] + d).value is None and "TOTAL" not in str(
+                                          column=required_dates[0][
+                                                     required_dates[1].index(
+                                                         act_date)] + d).value is None and "TOTAL" not in str(
                                 raw_s.cell(row=1, column=required_dates[0][required_dates[1].index(
                                     act_date)] + d).value):
                                 raw_s.cell(row=i - 2,
-                                                   column=required_dates[0][
-                                                              required_dates[1].index(act_date)] + d).value = str(
+                                           column=required_dates[0][
+                                                      required_dates[1].index(act_date)] + d).value = str(
                                     act_qnt) + " |" + str(now)
                                 break
 
                         raw_s.cell(row=i - 2,
-                                           column=required_dates[0][required_dates[1].index(act_date)] + d).font = Font(
+                                   column=required_dates[0][required_dates[1].index(act_date)] + d).font = Font(
                             color='00008B', bold=False, size=11, name="Arial")
 
                         # Тут начинается точечный расход по дням
@@ -80,22 +80,19 @@ def getRawConsumption(raw_file):
                                     additional_row = True
                                     continue
                                 raw_s.cell(row=i + 1,
-                                                   column=required_dates[0][required_dates[1].index(act_date)] + h).value = int(
+                                           column=required_dates[0][required_dates[1].index(act_date)] + h).value = int(
                                     act_qnt) / 4
                                 raw_s.cell(row=i + 1,
-                                                   column=required_dates[0][required_dates[1].index(act_date)] + h).font = Font(
+                                           column=required_dates[0][required_dates[1].index(act_date)] + h).font = Font(
                                     color='00008B', bold=False, size=11, name="Arial")
                             if additional_row:
                                 raw_s.cell(row=i + 1,
-                                                   column=required_dates[0][
-                                                              required_dates[1].index(act_date)] + h + 1).value = int(
+                                           column=required_dates[0][
+                                                      required_dates[1].index(act_date)] + h + 1).value = int(
                                     act_qnt) / 4
                                 raw_s.cell(row=i + 1,
-                                                   column=required_dates[0][
-                                                              required_dates[1].index(act_date)] + h + 1).font = Font(
+                                           column=required_dates[0][
+                                                      required_dates[1].index(act_date)] + h + 1).font = Font(
                                     color='00008B', bold=False, size=11, name="Arial")
 
     raw.save(raw_file)
-
-if __name__ == '__main__':
-    getRawConsumption('СЫРЬЕ.xlsx')

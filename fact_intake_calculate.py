@@ -2,7 +2,6 @@ import tkinter.messagebox
 from openpyxl.styles import Font
 import openpyxl
 import datetime
-from Progress_bar_window import ProgressBar
 
 
 def show_error_day_detecting(type_of_date):

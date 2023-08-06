@@ -6,7 +6,7 @@ import datetime
 def get_contact(day_array, corr, demand, current_year):
     now = datetime.datetime.today().strftime("%d.%m")
 
-    demand = openpyxl.load_workbook(demand, data_only=True)  # Opening source data with order, time, etc info
+    demand = openpyxl.load_workbook(demand, data_only=True)  # Opening source data with order, time, etc. info
     demand_s = demand["Production"]
 
     corrug = openpyxl.load_workbook(corr)  # Opening target file
