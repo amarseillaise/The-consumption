@@ -1,11 +1,11 @@
-import datetime
 import os
 import re
+import shutil
+from pathlib import Path
 import openpyxl
-from exceptions import TodayNotFindInPlanFileException
-
-NAME_OF_DIR_SAP_DEMAND = "WeeklyIntakeBySAP"
-TODAY = datetime.datetime.today().strftime("%Y-%m-%d") + " 00:00:00"
+from constants import *
+from exceptions import *
+from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
 
 
 def get_paths_to_files():
@@ -39,9 +39,11 @@ def get_paths_to_files():
 
 
 def get_corrug_calculating_days_from_plan(path_to_file):
-
     plan_wb = openpyxl.load_workbook(filename=path_to_file, data_only=True)
-    plan_wb_s = plan_wb["Plan"]
+    try:
+        plan_wb_s = plan_wb["Plan"]
+    except KeyError:
+        raise UnableToFindExcelSheet("Plan")
     day_array = [[], [], [], []]
     today_value = ""
 
@@ -51,7 +53,7 @@ def get_corrug_calculating_days_from_plan(path_to_file):
             break
     if str(today_value) != str(TODAY):
         plan_wb.close()
-        return TodayNotFindInPlanFileException("Не удалось найти ячейку текущего дня в файле плана.")
+        raise TodayNotFindInSourceFileException("Не удалось найти ячейку текущего дня в файле плана.")
 
     for j in range(i, plan_wb_s.max_column):
         val = plan_wb_s.cell(row=3, column=j).value
@@ -64,3 +66,14 @@ def get_corrug_calculating_days_from_plan(path_to_file):
     plan_wb.close()
     return day_array
 
+
+def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file, path_to_source_file, selected_year, pb):
+    # reserve copy first
+
+    Path("./ReserveCopy").mkdir(parents=True, exist_ok=True)
+
+    shutil.copyfile(path_to_target_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_target_file))
+    shutil.copyfile(path_to_source_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_source_file))
+
+    return get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
+                                               selected_year)

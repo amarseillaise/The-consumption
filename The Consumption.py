@@ -3,7 +3,7 @@ from tkinter import filedialog, Checkbutton, BooleanVar, messagebox
 from tkinter.ttk import Label, Combobox
 import os
 import datetime
-from intake_by_plan_corrug_calculate import get_consumtion
+from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
 from intake_by_forecast_corrug_calculate import get_contact
 from fact_intake_calculate import get_postfactum
 from demand_by_sap_raw_film_intake_calculate import getRawConsumption
@@ -48,7 +48,7 @@ for demand_path in os.listdir(path='..'):
     demand_path = None
     demand_sheet = None
 
-for j in os.listdir(path='ConsupmtionPerWeek'):  # collecting week and day from folder with SAP_load
+for j in os.listdir(path='WeeklyIntakeBySAP'):  # collecting week and day from folder with SAP_load
     weeks_for_raw_demand[0].append(str(j[0:4]))
     weeks_for_raw_demand[1].append(str(j[5:7]))
 
@@ -150,7 +150,7 @@ def transfer_data(choise, list, arr, file_src, file_trg, destroy):
             req_days[3].append(arr[3][i])
         i += 1
     if choise == 1:
-        get_consumtion(req_days, file_trg, file_src, int(VarYear.get()))
+        get_intake_by_plan_corrug_calculate(req_days, file_trg, file_src, int(VarYear.get()))
     elif choise == 2:
         get_contact(req_days, file_trg, file_src, int(VarYear.get()))
     elif choise == 3:
@@ -662,17 +662,17 @@ main_window.geometry('300x200')
 main_window.resizable(False, False)
 main_window.title('Выберите категорию расхода')
 
-# corrug_consumption_btn = tk.Button(
-#     main_window,
-#     text="Упаковка",
-#     width=w - 15,
-#     command=corr_window
-# )
-# corrug_consumption_btn.pack(
-#     ipadx=5,
-#     ipady=5,
-#     expand=True
-# )
+corrug_consumption_btn = tk.Button(
+    main_window,
+    text="Упаковка",
+    width=w - 15,
+    command=corr_window
+)
+corrug_consumption_btn.pack(
+    ipadx=5,
+    ipady=5,
+    expand=True
+)
 
 raw_consumption_btn = tk.Button(
     main_window,

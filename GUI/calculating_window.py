@@ -1,29 +1,20 @@
 import tkinter as tk
-from tkinter import messagebox
-from tkinter.ttk import Treeview
+from tkinter import messagebox, filedialog
+from tkinter.ttk import Treeview, Scrollbar, Progressbar, Label
+from constants import *
 
-
-GREEN = "#1CAC78"
-BLUE = "#6495ED"
-ORANGE = "#FF8243"
-GREY = "#434B4D"
-WHITE = "#FFFAFA"
-PINGY_WHITE = "#FFF0F5"
-MAIN_WINDOW_EDGE_INTERVAL = 28
-MAIN_WINDOW_IPADX = 5
-MAIN_WINDOW_IPADY = 5
 FONT_STYLE = "Calibri 10"
-VALUES_FOR_HEADINGS_TABLE = ("Year", "Week", "Month", "Day")
-TABLE_COLUMNS_WIDTH = 110
+MAIN_WINDOW_EDGE_INTERVAL = 28
 
 
 class CalculatingWindow:
 
-    def __init__(self,):
+    def __init__(self, ):
         self.main_window_link = None  # Attach for link a main window in future in init a main_window object
 
-        # GUI1 init
+        # GUI init
 
+        self.current_window_mode = -1
         self.calculating_window = tk.Tk()
         self.calculating_window.geometry('520x365')
         self.calculating_window.resizable(False, False)
@@ -36,7 +27,7 @@ class CalculatingWindow:
             self.calculating_window,
             text="Выбрать целевой файл",
             font=FONT_STYLE,
-            command=lambda: print(1),
+            command=lambda: self.select_target_file(),
             width=20
         )
         self.target_file_button.grid(
@@ -68,7 +59,7 @@ class CalculatingWindow:
 
         self.source_file_button = tk.Button(
             self.calculating_window,
-            text="Выбрать файл",
+            text="Выбрать источник",
             font=FONT_STYLE,
             command=lambda: print(1),
             width=20
@@ -107,14 +98,25 @@ class CalculatingWindow:
             selectmode="extended",
         )
 
+        self.operation_table.heading("Column", text="ИД", )
+        self.operation_table.column("Column", width=TABLE_COLUMNS_WIDTH, anchor="center")
         self.operation_table.heading("Year", text="Год")
-        self.operation_table.column("Year", width=TABLE_COLUMNS_WIDTH)
+        self.operation_table.column("Year", width=TABLE_COLUMNS_WIDTH, anchor="center")
         self.operation_table.heading("Month", text="Месяц")
-        self.operation_table.column("Month", width=TABLE_COLUMNS_WIDTH)
+        self.operation_table.column("Month", width=TABLE_COLUMNS_WIDTH, anchor="center")
         self.operation_table.heading("Week", text="Неделя")
-        self.operation_table.column("Week", width=TABLE_COLUMNS_WIDTH)
+        self.operation_table.column("Week", width=TABLE_COLUMNS_WIDTH, anchor="center")
         self.operation_table.heading("Day", text="День")
-        self.operation_table.column("Day", width=TABLE_COLUMNS_WIDTH)
+        self.operation_table.column("Day", width=TABLE_COLUMNS_WIDTH, anchor="center")
+
+        # set tag
+
+        self.operation_table.tag_configure('gray', background='#cccccc')
+        self.operation_table.tag_configure('white', background='#ffffff')
+
+        # Hide the Column column
+
+        self.operation_table["displaycolumns"] = ("Year", "Week", "Month", "Day")
 
         self.operation_table.grid(
             sticky="w",
@@ -124,8 +126,24 @@ class CalculatingWindow:
             ipady=0,
             ipadx=29,
             padx=(MAIN_WINDOW_EDGE_INTERVAL - 18, 5),
-            pady=0,
+            pady=0
         )
+
+        # Scrollbar set
+
+        self.vsb = Scrollbar(
+            self.calculating_window,
+            orient="vertical",
+            command=self.operation_table.yview
+        )
+        self.vsb.grid(column=1,
+                      row=2,
+                      sticky='nse',
+                      padx=(0, 90),
+                      pady=(1, 1)
+                      )
+
+        self.operation_table.configure(yscrollcommand=self.vsb.set)
 
         # Back button
 
@@ -164,15 +182,77 @@ class CalculatingWindow:
 
         )
 
+        # Progress bar
+
+        self.progressbar = Progressbar(
+            self.calculating_window,
+            orient='horizontal',
+            mode='determinate',
+            value=21,
+            maximum=100,
+            length=110
+        )
+        self.start_progressbar = lambda: self.progressbar.grid(
+            column=0,
+            row=3,
+            pady=(7, 15),
+            padx=MAIN_WINDOW_EDGE_INTERVAL - 18,
+            sticky='w',
+            ipadx=20,
+        )
+
+        # Label percent of progress bar
+
+        self.label_pb = Label(
+            self.calculating_window,
+            font="Calibri 12",
+            foreground=WHITE,
+            background=GREY,
+            text=f"{self.progressbar['value']}%"
+        )
+        self.show_label_pb = lambda: self.label_pb.grid(
+            column=1,
+            row=3,
+            columnspan=1,
+            pady=(7, 15),
+            padx=0,
+            sticky='w',
+            ipadx=0
+        )
+
         # method for closing handling
         def on_closing():
-            if messagebox.askokcancel("Выход", "Закрыть программу? Данные не сохранятся."):
+            if messagebox.askokcancel("Выход", "Закрыть программу?"):
                 self.main_window_link.main_window.destroy()
                 self.calculating_window.destroy()
 
         self.calculating_window.protocol("WM_DELETE_WINDOW", on_closing)
 
-
     def show_main_window(self):
         self.calculating_window.withdraw()
         self.main_window_link.main_window.deiconify()
+
+    def select_target_file(self):
+        self.target_file_path_field.config(state="normal")
+        self.target_file_path_field.delete(0, "end")
+        self.target_file_path_field.insert(0, filedialog.askopenfilename(
+            initialdir="..",
+            title="Выберите целевой файл",
+            filetypes=EXCEL_FILE_EXTENSIONS,
+        )
+                                           )
+        self.target_file_path_field.config(state="readonly")
+
+    def empty_window(self):
+        self.source_file_path_field.config(state="normal")
+        self.target_file_path_field.config(state="normal")
+        self.target_file_path_field.delete(0, "end")
+        self.source_file_path_field.delete(0, "end")
+        self.source_file_path_field.config(state="readonly")
+        self.target_file_path_field.config(state="readonly")
+        for i in self.operation_table.get_children():
+            self.operation_table.delete(i)
+
+    def update_pb(self, value):
+        self.progressbar['value'] += value
+        self.label_pb['text'] = f"{self.progressbar['value']}%"

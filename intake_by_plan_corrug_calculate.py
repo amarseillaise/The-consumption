@@ -1,18 +1,28 @@
 from openpyxl.styles import Font, Color
 import openpyxl
 import datetime
+from exceptions import  *
 
 
-def get_consumtion(day_array, corr, plan, current_year):
+def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  # day_array[[y], [m], [d], [col]]
     req_date = [[], []]
     current_week = int(datetime.datetime.today().strftime("%W"))
     current_year_real = int(datetime.datetime.today().strftime("%Y"))
 
     corrug = openpyxl.load_workbook(filename=corr)  # Opening target file
-    corrug_BOMmini = corrug["BOMmini"]
-    corrug_corrug = corrug["КАРТОН"]
+    try:
+        corrug_BOMmini = corrug["BOMmini"]
+    except KeyError as e:
+        corrug.close()
+        raise UnableToFindBomSheetInTargetFile("BOMmini")
 
-    plan = openpyxl.load_workbook(filename=plan, data_only=True)  # Opening source data with order, time, etc info
+    try:
+        corrug_corrug = corrug["КАРТОН"]
+    except KeyError as e:
+        corrug.close()
+        raise UnableToFindMainSheetInTargetFile("КАРТОН")
+
+    plan = openpyxl.load_workbook(filename=plan, data_only=True)  # Opening source data with order, time, etc. info
     plan_s = plan["Plan"]
 
     for i in range(3, corrug_corrug.max_column):  # Определяем год
@@ -22,7 +32,7 @@ def get_consumtion(day_array, corr, plan, current_year):
                 break
 
     for j in range(i, corrug_corrug.max_column):  # Определяем месяц
-        val = corrug_corrug.cell(row=1, column=j).value
+        val = str(corrug_corrug.cell(row=1, column=j).value).strip()
         if val == "January":
             val = 1
         elif val == "February":
@@ -60,7 +70,6 @@ def get_consumtion(day_array, corr, plan, current_year):
             if int(wk) < current_week or int(wk) > current_week + 2:
                 continue
         if val in day_array[2]:
-            print(k)
             for s in range(len(day_array[0])):
                 if val == day_array[2][s]:
                     req_date[0].append(k)
@@ -150,3 +159,4 @@ def get_consumtion(day_array, corr, plan, current_year):
                         color='556B2F', size=9, name="Arial")
 
     corrug.save(corr)
+    return True
