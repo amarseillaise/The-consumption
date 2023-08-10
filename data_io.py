@@ -67,11 +67,12 @@ def get_corrug_calculating_days_from_plan(path_to_file):
     return day_array
 
 
-def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file, path_to_source_file, selected_year, pb):
+def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file,
+                                      path_to_source_file, selected_year, pb_window):
     # reserve copy first
 
     Path("./ReserveCopy").mkdir(parents=True, exist_ok=True)
-
+    pb_window.set(71)
     shutil.copyfile(path_to_target_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_target_file))
     shutil.copyfile(path_to_source_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_source_file))
 
