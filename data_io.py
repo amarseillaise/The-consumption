@@ -1,7 +1,10 @@
 import os
 import re
 import shutil
+import time
+import traceback
 from pathlib import Path
+from tkinter import messagebox
 import openpyxl
 from constants import *
 from exceptions import *
@@ -68,13 +71,38 @@ def get_corrug_calculating_days_from_plan(path_to_file):
 
 
 def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file,
-                                      path_to_source_file, selected_year, pb_window):
+                                      path_to_source_file, selected_year, progress_var):
     # reserve copy first
 
     Path("./ReserveCopy").mkdir(parents=True, exist_ok=True)
-    pb_window.set(71)
+    progress_var.put(5)
     shutil.copyfile(path_to_target_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_target_file))
     shutil.copyfile(path_to_source_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_source_file))
+    progress_var.put(5)
 
-    return get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
-                                               selected_year)
+    try:
+        result = get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
+                                                   selected_year, progress_var)
+
+    except UnableToFindMainSheetInTargetFile as e:
+        messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{str(e)}" в целевом файле. '
+                                        'Возможно она была переименована.')
+        progress_var.put(-1)
+
+    except UnableToFindBomSheetInTargetFile as e:
+        messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{str(e)}" в целевом файле. '
+                                        'Возможно она была переименована.')
+        progress_var.put(-1)
+
+    except PermissionError:
+        # messagebox.showwarning("Внимание!", f'Не удалось открыть или закрыть целевой или файл-ресурс. Закройте файлы,'
+        #                                     f' если они открыты, или проверьте их целостность.')
+        progress_var.put(lambda: messagebox.showwarning("Внимание!", f'Не удалось открыть или закрыть целевой или файл-ресурс. Закройте файлы,'
+                                            f' если они открыты, или проверьте их целостность.'))
+
+    except Exception:
+        messagebox.showerror("Критическая ошибка!", traceback.format_exc())
+        exit(1)
+
+    finally:
+        time.sleep(1)

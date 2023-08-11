@@ -4,12 +4,13 @@ import datetime
 from exceptions import  *
 
 
-def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  # day_array[[y], [m], [d], [col]]
+def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, progress_var):  # day_array[[y], [m], [d], [col]]
     req_date = [[], []]
     current_week = int(datetime.datetime.today().strftime("%W"))
     current_year_real = int(datetime.datetime.today().strftime("%Y"))
 
     corrug = openpyxl.load_workbook(filename=corr)  # Opening target file
+    progress_var.put(15)
     try:
         corrug_BOMmini = corrug["BOMmini"]
     except KeyError as e:
@@ -23,6 +24,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
         raise UnableToFindMainSheetInTargetFile("КАРТОН")
 
     plan = openpyxl.load_workbook(filename=plan, data_only=True)  # Opening source data with order, time, etc. info
+    progress_var.put(15)
     plan_s = plan["Plan"]
 
     for i in range(3, corrug_corrug.max_column):  # Определяем год
@@ -31,6 +33,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
             if int(val) == int(current_year):
                 break
 
+    progress_var.put(5)
     for j in range(i, corrug_corrug.max_column):  # Определяем месяц
         val = str(corrug_corrug.cell(row=1, column=j).value).strip()
         if val == "January":
@@ -61,6 +64,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
             if val in day_array[1]:
                 break
 
+    progress_var.put(4)
     wk = corrug_corrug.cell(row=2, column=j).value
     for k in range(j, j + 45):  # Определяем день
         val = corrug_corrug.cell(row=3, column=k).value
@@ -77,6 +81,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
 #####################################################################################################
     collected_data = [[], [], []]
 
+    progress_var.put(5)
     for n in range(len(day_array[3])):
         val = day_array[2][n]
         col = day_array[3][n]
@@ -97,6 +102,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
 #####################################################################################################
     target_data = [[], [], []]
 
+    progress_var.put(5)
     for e in range(1, corrug_BOMmini.max_row):
 
         val = corrug_BOMmini.cell(row=e, column=2).value
@@ -113,6 +119,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
 #####################################################################################################
     final_data = [[], [], []]
 
+    progress_var.put(5)
     for d in range(len(target_data[0])):
 
         act_data = target_data[0][d]
@@ -139,6 +146,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
             final_data[1].append(target_data[1][d])
             final_data[2].append(act_qnt)
 #####################################################################################################
+    progress_var.put(8)
     for g in range(1, corrug_corrug.max_row):
 
         val = corrug_corrug.cell(row=g, column=2).value
@@ -158,5 +166,6 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year):  #
                                     column=req_date[0][req_date[1].index(act_date)]).font = Font(
                         color='556B2F', size=9, name="Arial")
 
+    progress_var.put(3)
     corrug.save(corr)
     return True

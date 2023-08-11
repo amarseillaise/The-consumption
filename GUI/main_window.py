@@ -1,11 +1,11 @@
-import time
+import inspect
+import queue
 from threading import Thread
 import tkinter as tk
 import traceback
 from tkinter import filedialog, messagebox
 from tkinter.ttk import Combobox, Treeview
 from data_io import calculate_and_echo_to_target_file
-# from .progressbar_window import ProgressBarWindow
 from constants import *
 from exceptions import *
 
@@ -284,8 +284,6 @@ class MainWindow:
                 return
 
             # Display progress info
-            progress_var = tk.IntVar()
-            self.calculating_window_link.progressbar.config(variable=progress_var)
             self.calculating_window_link.start_progressbar()
             self.calculating_window_link.show_label_pb()
 
@@ -303,46 +301,40 @@ class MainWindow:
 
             # execute calculating
 
-            def check_result(resultt):
-                if resultt.is_alive():
-                    self.calculating_window_link.calculating_window.after(100, check_result, resultt)
+            queue_var = queue.Queue()  # var for exchange between threads
+            executing_thread = Thread(target=calculate_and_echo_to_target_file,
+                                      args=(day_array,
+                                            self.calculating_window_link.target_file_path_field.get(),
+                                            self.calculating_window_link.source_file_path_field.get(),
+                                            self.selected_year.get(),
+                                            queue_var))
+            executing_thread.start()
+
+            def check_exec_thread():
+                if executing_thread.is_alive():
+                    progress_value = queue_var.get()!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    if inspect.isfunction(progress_value):
+                        progress_value()
+                        self.calculating_window_link.enable_all_elements()
+                        self.calculating_window_link.update_pb(0)
+                        self.calculating_window_link.progressbar.grid_forget()
+                        self.calculating_window_link.label_pb.grid_forget()
+                        return
+                    self.calculating_window_link.update_pb(progress_value)
+                    self.calculating_window_link.calculating_window.after(100, check_exec_thread)
                 else:
-                    progress_var.set(100)
-                    messagebox.showinfo("Успех!","fsd")
+                    self.calculating_window_link.update_pb(100)
+                    self.calculating_window_link.enable_all_elements()
+                    messagebox.showinfo("Успех!",
+                                        f"Рассчёт успешно завершён"
+                                        f" и занесён в файл"
+                                        f" {self.calculating_window_link.target_file_path_field.get()}")
+                    self.calculating_window_link.update_pb(0)
+                    self.calculating_window_link.progressbar.grid_forget()
+                    self.calculating_window_link.label_pb.grid_forget()
 
-            try:
-                result = Thread(target=calculate_and_echo_to_target_file, args=(day_array,
-                                                                                   self.calculating_window_link.target_file_path_field.get(),
-                                                                                   self.calculating_window_link.source_file_path_field.get(),
-                                                                                   self.selected_year.get(),
-                                                                                   progress_var))
-                # result = calculate_and_echo_to_target_file(day_array,
-                #                                            self.calculating_window_link.target_file_path_field.get(),
-                #                                            self.calculating_window_link.source_file_path_field.get(),
-                #                                            self.selected_year.get(),
-                #                                            "qwe")
-                result.start()
-                self.calculating_window_link.calculating_window.after(100, check_result, result)
-
-
-                #if result:
-                messagebox.showinfo("Успех!",
-                                    f"Рассчёт успешно завершён"
-                                    f" и занесён в файл {self.calculating_window_link.target_file_path_field.get()}")
-
-            except UnableToFindMainSheetInTargetFile as e:
-                messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{str(e)}" в целевом файле. '
-                                                    'Возможно она была переименована.')
-                return
-
-            except UnableToFindBomSheetInTargetFile as e:
-                messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{str(e)}" в целевом файле. '
-                                                    'Возможно она была переименована.')
-                return
-
-            except Exception:
-                messagebox.showerror("Критическая ошибка!", traceback.format_exc())
-                exit(1)
+            self.calculating_window_link.disable_all_elements()
+            self.calculating_window_link.calculating_window.after(100, check_exec_thread)
 
         # Show window. Hide this windows
 

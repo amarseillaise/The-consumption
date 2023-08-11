@@ -254,5 +254,26 @@ class CalculatingWindow:
             self.operation_table.delete(i)
 
     def update_pb(self, value):
-        self.progressbar['value'] += value
+        if value == 0:
+            percent = value
+        else:
+            percent = self.progressbar['value'] + value
+        if percent > 100:
+            percent = 100
+        self.progressbar['value'] = percent
         self.label_pb['text'] = f"{self.progressbar['value']}%"
+
+    def disable_all_elements(self):
+        self.operation_table.configure(selectmode="none")
+        self.target_file_button.config(state="disabled")
+        self.source_file_button.config(state="disabled")
+        self.back_button.config(state="disabled")
+        self.execute_button.config(state="disabled")
+
+    def enable_all_elements(self):
+        self.operation_table.configure(selectmode="browse")
+        self.target_file_button.config(state="normal")
+        self.source_file_button.config(state="normal")
+        self.back_button.config(state="normal")
+        self.execute_button.config(state="normal")
+
