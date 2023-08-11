@@ -188,7 +188,7 @@ class CalculatingWindow:
             self.calculating_window,
             orient='horizontal',
             mode='determinate',
-            value=21,
+            value=0,
             maximum=100,
             length=110
         )

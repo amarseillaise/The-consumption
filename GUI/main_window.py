@@ -2,9 +2,9 @@ import inspect
 import queue
 from threading import Thread
 import tkinter as tk
-import traceback
 from tkinter import filedialog, messagebox
 from tkinter.ttk import Combobox, Treeview
+import _queue
 from data_io import calculate_and_echo_to_target_file
 from constants import *
 from exceptions import *
@@ -311,8 +311,24 @@ class MainWindow:
             executing_thread.start()
 
             def check_exec_thread():
-                if executing_thread.is_alive():
-                    progress_value = queue_var.get()!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                def end_checking():
+                    self.calculating_window_link.update_pb(100)
+                    self.calculating_window_link.enable_all_elements()
+                    messagebox.showinfo("Успех!",
+                                        f"Рассчёт успешно завершён"
+                                        f" и занесён в файл"
+                                        f" {self.calculating_window_link.target_file_path_field.get()}")
+
+                    self.calculating_window_link.update_pb(0)
+                    self.calculating_window_link.progressbar.grid_forget()
+                    self.calculating_window_link.label_pb.grid_forget()
+
+                if executing_thread.is_alive() or not queue_var.empty():
+                    try:
+                        progress_value = queue_var.get(timeout=180)
+                    except _queue.Empty:
+                        messagebox.showerror("Ошибка!", "Возникла непредвиденная ошибка.")
+                        exit(-1)
                     if inspect.isfunction(progress_value):
                         progress_value()
                         self.calculating_window_link.enable_all_elements()
@@ -320,18 +336,15 @@ class MainWindow:
                         self.calculating_window_link.progressbar.grid_forget()
                         self.calculating_window_link.label_pb.grid_forget()
                         return
-                    self.calculating_window_link.update_pb(progress_value)
-                    self.calculating_window_link.calculating_window.after(100, check_exec_thread)
+                    elif progress_value == 100:
+                        end_checking()
+                        return
+                    else:
+                        self.calculating_window_link.update_pb(progress_value)
+                        self.calculating_window_link.calculating_window.after(100, check_exec_thread)
                 else:
-                    self.calculating_window_link.update_pb(100)
-                    self.calculating_window_link.enable_all_elements()
-                    messagebox.showinfo("Успех!",
-                                        f"Рассчёт успешно завершён"
-                                        f" и занесён в файл"
-                                        f" {self.calculating_window_link.target_file_path_field.get()}")
-                    self.calculating_window_link.update_pb(0)
-                    self.calculating_window_link.progressbar.grid_forget()
-                    self.calculating_window_link.label_pb.grid_forget()
+                    end_checking()
+                    return
 
             self.calculating_window_link.disable_all_elements()
             self.calculating_window_link.calculating_window.after(100, check_exec_thread)

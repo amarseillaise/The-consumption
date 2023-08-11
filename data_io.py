@@ -3,6 +3,7 @@ import re
 import shutil
 import time
 import traceback
+import zipfile
 from pathlib import Path
 from tkinter import messagebox
 import openpyxl
@@ -81,28 +82,29 @@ def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file,
     progress_var.put(5)
 
     try:
-        result = get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
-                                                   selected_year, progress_var)
+        get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
+                                                     selected_year, progress_var)
+        progress_var.put(100)
 
     except UnableToFindMainSheetInTargetFile as e:
-        messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{str(e)}" в целевом файле. '
-                                        'Возможно она была переименована.')
-        progress_var.put(-1)
+        e_str = str(e)
+        progress_var.put(
+            lambda: messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{e_str}" в целевом файле. '
+                                                        'Возможно она была переименована.'))
 
     except UnableToFindBomSheetInTargetFile as e:
-        messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{str(e)}" в целевом файле. '
-                                        'Возможно она была переименована.')
-        progress_var.put(-1)
+        e_str = str(e)
+        progress_var.put(
+            lambda: messagebox.showwarning("Внимание!", f'Не удалось найти вкладку "{e_str}" в целевом файле. '
+                                                        'Возможно она была переименована.'))
 
-    except PermissionError:
-        # messagebox.showwarning("Внимание!", f'Не удалось открыть или закрыть целевой или файл-ресурс. Закройте файлы,'
-        #                                     f' если они открыты, или проверьте их целостность.')
-        progress_var.put(lambda: messagebox.showwarning("Внимание!", f'Не удалось открыть или закрыть целевой или файл-ресурс. Закройте файлы,'
-                                            f' если они открыты, или проверьте их целостность.'))
+    except (PermissionError, zipfile.BadZipfile):
+        progress_var.put(lambda: messagebox.showwarning("Внимание!",
+                                                        f'Не удалось открыть или закрыть целевой или файл-ресурс. '
+                                                        f'Закройте файлы,'
+                                                        f' если они открыты, или проверьте их целостность.'))
 
     except Exception:
-        messagebox.showerror("Критическая ошибка!", traceback.format_exc())
+        e_str = traceback.format_exc()
+        progress_var.put(lambda: messagebox.showerror("Критическая ошибка!", e_str))
         exit(1)
-
-    finally:
-        time.sleep(1)

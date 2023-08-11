@@ -1,7 +1,7 @@
 from openpyxl.styles import Font, Color
 import openpyxl
 import datetime
-from exceptions import  *
+from exceptions import *
 
 
 def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, progress_var):  # day_array[[y], [m], [d], [col]]
@@ -64,7 +64,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, pro
             if val in day_array[1]:
                 break
 
-    progress_var.put(4)
+    progress_var.put(2)
     wk = corrug_corrug.cell(row=2, column=j).value
     for k in range(j, j + 45):  # Определяем день
         val = corrug_corrug.cell(row=3, column=k).value
@@ -81,7 +81,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, pro
 #####################################################################################################
     collected_data = [[], [], []]
 
-    progress_var.put(5)
+    progress_var.put(2)
     for n in range(len(day_array[3])):
         val = day_array[2][n]
         col = day_array[3][n]
@@ -102,7 +102,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, pro
 #####################################################################################################
     target_data = [[], [], []]
 
-    progress_var.put(5)
+    progress_var.put(8)
     for e in range(1, corrug_BOMmini.max_row):
 
         val = corrug_BOMmini.cell(row=e, column=2).value
@@ -119,7 +119,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, pro
 #####################################################################################################
     final_data = [[], [], []]
 
-    progress_var.put(5)
+    progress_var.put(8)
     for d in range(len(target_data[0])):
 
         act_data = target_data[0][d]
@@ -146,7 +146,7 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, pro
             final_data[1].append(target_data[1][d])
             final_data[2].append(act_qnt)
 #####################################################################################################
-    progress_var.put(8)
+    progress_var.put(20)
     for g in range(1, corrug_corrug.max_row):
 
         val = corrug_corrug.cell(row=g, column=2).value
@@ -166,6 +166,5 @@ def get_intake_by_plan_corrug_calculate(day_array, corr, plan, current_year, pro
                                     column=req_date[0][req_date[1].index(act_date)]).font = Font(
                         color='556B2F', size=9, name="Arial")
 
-    progress_var.put(3)
+    progress_var.put(9)
     corrug.save(corr)
-    return True
