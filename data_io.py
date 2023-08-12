@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import time
 import traceback
 import zipfile
 from pathlib import Path
@@ -10,6 +9,7 @@ import openpyxl
 from constants import *
 from exceptions import *
 from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
+from intake_by_forecast_corrug_calculate import get_intake_by_forecast_corrug_calculate
 
 
 def get_paths_to_files():
@@ -31,6 +31,7 @@ def get_paths_to_files():
     # get paths to files in WeeklyIntakeBySAP dir
 
     try:
+        Path("./" + NAME_OF_DIR_SAP_DEMAND).mkdir(parents=True, exist_ok=True)
         files = []
         for file in os.listdir(path="./" + NAME_OF_DIR_SAP_DEMAND):
             if re.match(r"20\d{2}-\d{2}.(xl|XL)", file):
@@ -71,7 +72,37 @@ def get_corrug_calculating_days_from_plan(path_to_file):
     return day_array
 
 
-def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file,
+def get_corrug_calculating_weeks_from_forecast(path_to_file):
+    forecast_wb = openpyxl.load_workbook(filename=path_to_file, data_only=True)
+    try:
+        forecast_wb_s = forecast_wb["Production"]
+    except KeyError:
+        raise UnableToFindExcelSheet("Production")
+    day_array = [[], [], [], []]
+    val = ""
+
+    for i in range(1, forecast_wb_s.max_column):
+        val = forecast_wb_s.cell(row=2, column=i).value
+        if val is not None and str(val) == str(CURRENT_WEEK):
+            break
+    if str(val) != str(CURRENT_WEEK):
+        forecast_wb.close()
+        raise TodayNotFindInSourceFileException("Не удалось найти ячейку текущей недели в файле прогноза. "
+                                                "Возможно файл старый")
+
+    for j in range(i, forecast_wb_s.max_column):
+        val = forecast_wb_s.cell(row=2, column=j).value
+        if val is not None:
+            day_array[0].append(val)
+            day_array[1].append(j)
+            day_array[2].append(0)
+            day_array[3].append(0)
+
+    forecast_wb.close()
+    return day_array
+
+
+def calculate_and_echo_to_target_file(mode, selected_days_arr, path_to_target_file,
                                       path_to_source_file, selected_year, progress_var):
     # reserve copy first
 
@@ -82,8 +113,15 @@ def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file,
     progress_var.put(5)
 
     try:
-        get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
-                                                     selected_year, progress_var)
+        if mode == 0:
+            get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
+                                                         selected_year, progress_var)
+
+        elif mode == 1:
+            get_intake_by_forecast_corrug_calculate((selected_days_arr[-1], selected_days_arr[-2]),
+                                                    path_to_target_file, path_to_source_file,
+                                                         selected_year, progress_var)
+
         progress_var.put(100)
 
     except UnableToFindMainSheetInTargetFile as e:
@@ -103,6 +141,12 @@ def calculate_and_echo_to_target_file(selected_days_arr, path_to_target_file,
                                                         f'Не удалось открыть или закрыть целевой или файл-ресурс. '
                                                         f'Закройте файлы,'
                                                         f' если они открыты, или проверьте их целостность.'))
+
+    except TodayNotFindInSourceFileException:
+        progress_var.put(lambda: messagebox.showwarning("Внимание!",
+                                                        f'Не удалось найти текущий день (неделю, месяц) в целевом '
+                                                        f'файле. Убедитесь, что количество дней (месяцев, недель) '
+                                                        f'в файле-источнике такое же как и в целевом файле.'))
 
     except Exception:
         e_str = traceback.format_exc()

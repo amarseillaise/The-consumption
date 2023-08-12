@@ -1,17 +1,29 @@
 from openpyxl.styles import Font
 import openpyxl
 import datetime
+from exceptions import *
 
 
-def get_contact(day_array, corr, demand, current_year):
+def get_intake_by_forecast_corrug_calculate(day_array, corr, demand, current_year, progress_var):
     now = datetime.datetime.today().strftime("%d.%m")
 
     demand = openpyxl.load_workbook(demand, data_only=True)  # Opening source data with order, time, etc. info
     demand_s = demand["Production"]
+    progress_var.put(20)
 
-    corrug = openpyxl.load_workbook(corr)  # Opening target file
-    corrug_BOMmini = corrug["BOMmini"]
-    corrug_corrug = corrug["КАРТОН"]
+    corrug = openpyxl.load_workbook(filename=corr)  # Opening target file
+    try:
+        corrug_BOMmini = corrug["BOMmini"]
+    except KeyError as e:
+        corrug.close()
+        raise UnableToFindBomSheetInTargetFile("BOMmini")
+
+    try:
+        corrug_corrug = corrug["КАРТОН"]
+    except KeyError as e:
+        corrug.close()
+        raise UnableToFindMainSheetInTargetFile("КАРТОН")
+    progress_var.put(20)
     #####################################################################################################
     collected_data = [[], [], []]  # 1
 
@@ -28,6 +40,7 @@ def get_contact(day_array, corr, demand, current_year):
                     collected_data[0].append(val)
                     collected_data[1].append(SKU_self)
                     collected_data[2].append(val_SKU)
+    progress_var.put(15)
     #####################################################################################################
     target_data = [[], [], []]  # 2
 
@@ -44,6 +57,7 @@ def get_contact(day_array, corr, demand, current_year):
                 target_data[0].append(collected_data[0][j])
                 target_data[1].append(req_val)
                 target_data[2].append(collected_data[2][j])
+    progress_var.put(15)
     #####################################################################################################
     final_data = [[], [], []]  # 3
 
@@ -72,26 +86,28 @@ def get_contact(day_array, corr, demand, current_year):
             final_data[0].append(target_data[0][i])
             final_data[1].append(target_data[1][i])
             final_data[2].append(act_qnt)
+    progress_var.put(10)
     #####################################################################################################
     req_date = [[], []]  # 4
 
-    for i in range(7, corrug_corrug.max_column):
+    for i in range(3, corrug_corrug.max_column):
         val = corrug_corrug.cell(row=2, column=i).value
         if val is not None:
-            if int(val) == current_year:
+            if int(val) == int(current_year):
                 break
+    progress_var.put(2)
 
     for j in range(i, corrug_corrug.max_column):
         val = corrug_corrug.cell(row=2, column=j).value
         if val in final_data[0] and val not in req_date[1]:
             req_date[0].append(j)
             req_date[1].append(val)
+    progress_var.put(2)
 
     # for p in range(len(final_data[0])):
     # print(final_data[0][p], final_data[1][p], final_data[2][p])
     #####################################################################################################
     for i in range(1, corrug_corrug.max_row):  # 5
-        print(i)
 
         val = corrug_corrug.cell(row=i, column=2).value
 
@@ -105,18 +121,23 @@ def get_contact(day_array, corr, demand, current_year):
                 act_qnt = final_data[2][j]
 
                 if str(val) == str(act_sku):
-                    for d in range(7):
-                        if corrug_corrug.cell(row=i - 3,
-                                              column=req_date[0][
-                                                         req_date[1].index(
-                                                             act_date)] + d).value is None and "TOTAL" not in str(
-                            corrug_corrug.cell(row=1, column=req_date[0][req_date[1].index(
-                                act_date)] + d).value):
-                            corrug_corrug.cell(row=i - 3,
-                                               column=req_date[0][
-                                                          req_date[1].index(act_date)] + d).value = str(
-                                act_qnt) + " |" + str(now)
-                            break
+                    try:
+                        for d in range(7):
+                            if corrug_corrug.cell(row=i - 3,
+                                                  column=req_date[0][
+                                                             req_date[1].index(
+                                                                 act_date)] + d).value is None and "TOTAL" not in str(
+                                corrug_corrug.cell(row=1, column=req_date[0][req_date[1].index(
+                                    act_date)] + d).value):
+                                corrug_corrug.cell(row=i - 3,
+                                                   column=req_date[0][
+                                                              req_date[1].index(act_date)] + d).value = str(
+                                    act_qnt) + " |" + str(now)
+                                break
+                    except ValueError:
+                        corrug.close()
+                        demand.close()
+                        raise TodayNotFindInSourceFileException
 
                     corrug_corrug.cell(row=i - 3,
                                        column=req_date[0][req_date[1].index(act_date)] + d).font = Font(
@@ -145,4 +166,5 @@ def get_contact(day_array, corr, demand, current_year):
                                                       req_date[1].index(act_date)] + h + 1).font = Font(
                             color='00008B', bold=False, size=9, name="Arial")
 
+    progress_var.put(3)
     corrug.save(corr)

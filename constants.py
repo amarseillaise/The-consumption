@@ -10,6 +10,7 @@ MAIN_WINDOW_EDGE_INTERVAL = 18
 MAIN_WINDOW_IPADX = 5
 MAIN_WINDOW_IPADY = 5
 CURRENT_YEAR = int(datetime.today().strftime("%Y"))
+CURRENT_WEEK = int(datetime.today().strftime("%W"))
 FONT_STYLE = "Calibri 12"
 NAME_OF_DIR_SAP_DEMAND = "WeeklyIntakeBySAP"
 TODAY = datetime.today().strftime("%Y-%m-%d") + " 00:00:00"
@@ -19,6 +20,7 @@ VALUES_FOR_CATEGORY_TABLE = (("Упаковка",), ("Плёнка",), ("Сыр�
 EXCEL_FILE_EXTENSIONS = (("Excel files", "*.xlsx"), ("Excel files", "*.xls"),
                          ("Excel files", "*.xlsm"), ("Excel files", "*.xlsb"))
 MODE = {
-    0: "Расчёт картона по плану производства"
+    0: "Расчёт картона по плану производства",
+    1: "Расчёт картона по прогнозу"
 }
 

@@ -4,7 +4,7 @@ from tkinter.ttk import Label, Combobox
 import os
 import datetime
 from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
-from intake_by_forecast_corrug_calculate import get_contact
+from intake_by_forecast_corrug_calculate import get_intake_by_forecast_corrug_calculate
 from fact_intake_calculate import get_postfactum
 from demand_by_sap_raw_film_intake_calculate import getRawConsumption
 
@@ -152,7 +152,7 @@ def transfer_data(choise, list, arr, file_src, file_trg, destroy):
     if choise == 1:
         get_intake_by_plan_corrug_calculate(req_days, file_trg, file_src, int(VarYear.get()))
     elif choise == 2:
-        get_contact(req_days, file_trg, file_src, int(VarYear.get()))
+        get_intake_by_forecast_corrug_calculate(req_days, file_trg, file_src, int(VarYear.get()))
     elif choise == 3:
         try:
             get_postfactum(file_trg)

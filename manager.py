@@ -40,4 +40,40 @@ def init_files_to_gui(mode: int, manual_path_to_source_file=""):
             result["path_to_target_file"] = path_to_target_file
             result["window_title"] = "Расчёт картона по плану производства"
 
+    # CORRUG by forecast SAP
+
+    elif mode == 1:
+        path_to_target_file = ""
+        if not manual_path_to_source_file:
+            paths_to_files = get_paths_to_files()
+            path_to_target_file = paths_to_files.get("картон.xl")
+            path_to_source_file = paths_to_files.get("production")
+        else:
+            path_to_source_file = manual_path_to_source_file
+
+        if path_to_source_file:
+            got_data = get_corrug_calculating_weeks_from_forecast(path_to_source_file)
+
+            pre_result = []
+            for i in range(len(got_data[0])):
+                pre_result.append((ExcelDayInfo(i + 1, got_data[1][i], CURRENT_YEAR, got_data[0][i], "", "")))
+            result["day_info"] = pre_result
+            result["path_to_source_file"] = path_to_source_file
+            result["path_to_target_file"] = path_to_target_file
+            result["window_title"] = "Расчёт картона по прогнозу"
+
+        # path_to_target_file = ""
+        # if not manual_path_to_source_file:
+        #     paths_to_files = get_paths_to_files()
+        #     path_to_target_file = paths_to_files.get("картон.xl")
+        #     path_to_source_dir = "./" + NAME_OF_DIR_SAP_DEMAND
+        # else:
+        #     path_to_source_dir = manual_path_to_source_file
+        #     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #     pre_result = []
+        #     for i in os.listdir(path=path_to_source_dir):  # collecting week and day from folder with SAP_load
+        #         pre_result.append(ExcelDayInfo(i + 1, got_data[3][i], got_data[0][i], "", got_data[1][i], got_data[2][i]))
+        #     weeks_for_raw_demand[0].append(str(j[0:4]))
+        #     weeks_for_raw_demand[1].append(str(j[5:7]))
+
     return result

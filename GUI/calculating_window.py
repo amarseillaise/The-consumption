@@ -271,7 +271,7 @@ class CalculatingWindow:
         self.execute_button.config(state="disabled")
 
     def enable_all_elements(self):
-        self.operation_table.configure(selectmode="browse")
+        self.operation_table.configure(selectmode="extended")
         self.target_file_button.config(state="normal")
         self.source_file_button.config(state="normal")
         self.back_button.config(state="normal")

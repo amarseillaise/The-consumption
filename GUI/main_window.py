@@ -40,7 +40,8 @@ class MainWindow:
             if selected_category == "Упаковка":
                 self.change_category_menu("Расчёт упаковки", "По плану производства", "По прогнозу",
                                           "Фактические остатки",
-                                          lambda: self.show_calculating_window(0, clear_table=True), lambda: print(2),
+                                          lambda: self.show_calculating_window(0, clear_table=True),
+                                          lambda: self.show_calculating_window(1, clear_table=True),
                                           lambda: print(3))
             elif selected_category == "Сырьё":
                 self.change_category_menu("Расчёт сырья", "По деманду", "Фактические остатки",
@@ -265,7 +266,7 @@ class MainWindow:
                                                                        )
             self.calculating_window_link.source_file_path_field.config(state="readonly")
 
-            self.show_calculating_window(mode, self.calculating_window_link.source_file_path_field.get(), False)
+            self.show_calculating_window(mode, self.calculating_window_link.source_file_path_field.get(), True)
 
             #  Execute button
 
@@ -303,7 +304,8 @@ class MainWindow:
 
             queue_var = queue.Queue()  # var for exchange between threads
             executing_thread = Thread(target=calculate_and_echo_to_target_file,
-                                      args=(day_array,
+                                      args=(mode,
+                                            day_array,
                                             self.calculating_window_link.target_file_path_field.get(),
                                             self.calculating_window_link.source_file_path_field.get(),
                                             self.selected_year.get(),
