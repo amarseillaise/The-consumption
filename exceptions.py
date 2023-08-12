@@ -12,3 +12,7 @@ class UnableToFindMainSheetInTargetFile(Exception):
 
 class UnableToFindBomSheetInTargetFile(Exception):
     pass
+
+
+class OpenCloseFileException(Exception):
+    pass

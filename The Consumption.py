@@ -5,7 +5,7 @@ import os
 import datetime
 from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
 from intake_by_forecast_corrug_calculate import get_intake_by_forecast_corrug_calculate
-from fact_intake_calculate import get_postfactum
+from fact_intake_calculate import get_fact_intake_calculate
 from demand_by_sap_raw_film_intake_calculate import getRawConsumption
 
 import openpyxl
@@ -155,7 +155,7 @@ def transfer_data(choise, list, arr, file_src, file_trg, destroy):
         get_intake_by_forecast_corrug_calculate(req_days, file_trg, file_src, int(VarYear.get()))
     elif choise == 3:
         try:
-            get_postfactum(file_trg)
+            get_fact_intake_calculate(file_trg)
         except TypeError:
             ermsgbox("Ошибка", "Сохрани целевой файл и запусти заново. Или неправильная выгрузка RMPA")
             destroy.destroy()
@@ -164,7 +164,7 @@ def transfer_data(choise, list, arr, file_src, file_trg, destroy):
         getRawConsumption(file_trg)
     elif choise == 5:
         try:
-            get_postfactum(file_trg)
+            get_fact_intake_calculate(file_trg)
         except TypeError:
             ermsgbox("Ошибка", "Сохрани целевой файл и запусти заново. Или неправильная выгрузка RMPA")
             destroy.destroy()

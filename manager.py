@@ -62,6 +62,9 @@ def init_files_to_gui(mode: int, manual_path_to_source_file=""):
             result["path_to_target_file"] = path_to_target_file
             result["window_title"] = "Расчёт картона по прогнозу"
 
+    elif mode in SIMPLE_MODS:
+        pass
+
         # path_to_target_file = ""
         # if not manual_path_to_source_file:
         #     paths_to_files = get_paths_to_files()

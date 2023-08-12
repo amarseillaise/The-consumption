@@ -12,7 +12,7 @@ from exceptions import *
 
 class MainWindow:
 
-    def __init__(self, calculating_window_link, get_source_and_target_data):
+    def __init__(self, calculating_window_link, get_source_and_target_data, ):
         # Methods init
 
         self.calculating_window_link = calculating_window_link  # link to calculate window
@@ -42,7 +42,7 @@ class MainWindow:
                                           "Фактические остатки",
                                           lambda: self.show_calculating_window(0, clear_table=True),
                                           lambda: self.show_calculating_window(1, clear_table=True),
-                                          lambda: print(3))
+                                          lambda: self.show_calculating_window(2, clear_table=True))
             elif selected_category == "Сырьё":
                 self.change_category_menu("Расчёт сырья", "По деманду", "Фактические остатки",
                                           None, lambda: print(1), lambda: print(2), None)
@@ -223,7 +223,8 @@ class MainWindow:
 
         # insert values in table
 
-        self.calculating_window_link.calculating_window.title(MODE.get(mode))
+        self.calculating_window_link.calculating_window.title(MODE.get(mode))  # set title by constant
+        self.calculating_window_link.source_file_button.config(state="normal")  # set button state by default
         for day_info in data["day_info"]:
             tag = "white" if day_info.id % 2 == 0 else "gray"
             self.calculating_window_link.operation_table.insert('', 'end', values=
@@ -242,6 +243,15 @@ class MainWindow:
             self.calculating_window_link.source_file_path_field.delete(0, "end")
             self.calculating_window_link.source_file_path_field.insert(0, data.get("path_to_source_file"))
             self.calculating_window_link.source_file_path_field.config(state="readonly")
+
+        # If mode is calculating fact intake
+
+        if mode in SIMPLE_MODS:
+            self.calculating_window_link.source_file_path_field.config(state="normal")
+            self.calculating_window_link.source_file_path_field.delete(0, "end")
+            self.calculating_window_link.source_file_path_field.insert(0, "НЕ ТРЕБУЕТСЯ")
+            self.calculating_window_link.source_file_path_field.config(state="readonly")
+            self.calculating_window_link.source_file_button.config(state="disabled")
 
         # Focus all
 
@@ -280,7 +290,7 @@ class MainWindow:
                 messagebox.showwarning("Внимание!", "Выберите источник и целевой файл.")
                 return
 
-            if not self.calculating_window_link.operation_table.get_children():
+            if not self.calculating_window_link.operation_table.get_children() and mode not in SIMPLE_MODS:
                 messagebox.showwarning("Внимание!", "Не удалось подгрузить даты для расчёта. Выберите источник заново")
                 return
 

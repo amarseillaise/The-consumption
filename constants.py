@@ -21,6 +21,13 @@ EXCEL_FILE_EXTENSIONS = (("Excel files", "*.xlsx"), ("Excel files", "*.xls"),
                          ("Excel files", "*.xlsm"), ("Excel files", "*.xlsb"))
 MODE = {
     0: "Расчёт картона по плану производства",
-    1: "Расчёт картона по прогнозу"
+    1: "Расчёт картона по прогнозу",
+    2: "Расчёт фактического расхода картона на сегодня"
+}
+SIMPLE_MODS = (2,)
+NAMES_SHEETS_IN_SIMPLE_MOD = {
+    2: "КАРТОН",
+    4: "ПЛЕНКА",
+    6: "Сырье"
 }
 

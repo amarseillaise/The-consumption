@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import time
 import traceback
 import zipfile
 from pathlib import Path
@@ -10,6 +11,7 @@ from constants import *
 from exceptions import *
 from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
 from intake_by_forecast_corrug_calculate import get_intake_by_forecast_corrug_calculate
+from fact_intake_calculate import get_fact_intake_calculate
 
 
 def get_paths_to_files():
@@ -109,18 +111,22 @@ def calculate_and_echo_to_target_file(mode, selected_days_arr, path_to_target_fi
     Path("./ReserveCopy").mkdir(parents=True, exist_ok=True)
     progress_var.put(5)
     shutil.copyfile(path_to_target_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_target_file))
-    shutil.copyfile(path_to_source_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_source_file))
+    if mode not in SIMPLE_MODS:
+        shutil.copyfile(path_to_source_file, "./ReserveCopy/" + "reserve_copy_" + os.path.basename(path_to_source_file))
     progress_var.put(5)
 
     try:
         if mode == 0:
             get_intake_by_plan_corrug_calculate(selected_days_arr[0:-1], path_to_target_file, path_to_source_file,
-                                                         selected_year, progress_var)
+                                                selected_year, progress_var)
 
         elif mode == 1:
             get_intake_by_forecast_corrug_calculate((selected_days_arr[-1], selected_days_arr[-2]),
                                                     path_to_target_file, path_to_source_file,
-                                                         selected_year, progress_var)
+                                                    selected_year, progress_var)
+
+        elif mode == 2:
+            get_fact_intake_calculate(mode, path_to_target_file, progress_var)
 
         progress_var.put(100)
 
@@ -144,9 +150,15 @@ def calculate_and_echo_to_target_file(mode, selected_days_arr, path_to_target_fi
 
     except TodayNotFindInSourceFileException:
         progress_var.put(lambda: messagebox.showwarning("Внимание!",
-                                                        f'Не удалось найти текущий день (неделю, месяц) в целевом '
-                                                        f'файле. Убедитесь, что количество дней (месяцев, недель) '
+                                                        f'Не удалось найти текущий день (неделю, месяц, год) в целевом '
+                                                        f'файле. Убедитесь, что количество дней (месяцев, недель, лет) '
                                                         f'в файле-источнике такое же как и в целевом файле.'))
+
+    except OpenCloseFileException as e:
+        e_str = str(e)
+        progress_var.put(lambda: messagebox.showwarning("Внимание!",
+                                                        f'Возникла техническая ошибка. Чтобы её исправить откройте '
+                                                        f'файл "{e_str}", просто сохраните и закройте его.'))
 
     except Exception:
         e_str = traceback.format_exc()
