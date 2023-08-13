@@ -1,7 +1,21 @@
+import datetime
+
 from GUI.main_window import MainWindow
 from GUI.calculating_window import CalculatingWindow
 from data_io import *
 from objects import ExcelDayInfo
+
+
+def licence_check():
+    start_date = datetime.today().today()
+    end_date = datetime(2023, 8, 28)
+    day_remain = end_date - start_date
+    if day_remain.days < 1:
+        messagebox.showerror("Проверка лицензии", "Срок пробной версии истёк.")
+        exit(0)
+    else:
+        messagebox.showinfo("Проверка лицензии", f"Это пробная версия программы. "
+                                                 f"Пробный срок истекает через {day_remain.days} дней.")
 
 
 def init_gui():
@@ -47,22 +61,22 @@ def init_files_to_gui(mode: int, manual_path_to_source_file=""):
     # CORRUG by production plan
     if mode == 0:
         result = collect_data("картон.xl", "план", get_corrug_calculating_days_from_plan,
-                     "Расчёт расхода картона по плану производства", (3, 0, 4, 1, 2))
+                              "Расчёт расхода картона по плану производства", (3, 0, 4, 1, 2))
 
     # CORRUG by forecast plan
     elif mode == 1:
         result = collect_data("картон.xl", "production", get_corrug_calculating_weeks_from_forecast,
-                     "Расчёт расхода картона по прогнозу", (1, 2, 0, 4, 4))
+                              "Расчёт расхода картона по прогнозу", (1, 2, 0, 4, 4))
 
     # FILM by SAP forecast
     elif mode == 3:
         result = collect_data("пленка.xl", "weeklyintakebysap", get_film_raw_week_year_from_sap_demand,
-                     "Расчёт расхода плёнки по деманду", (4, 0, 1, 4, 4))
+                              "Расчёт расхода плёнки по деманду", (4, 0, 1, 4, 4))
 
     # RAW by SAP forecast
     elif mode == 5:
         result = collect_data("сырье.xl", "weeklyintakebysap", get_film_raw_week_year_from_sap_demand,
-                     "Расчёт расхода сырья по деманду", (4, 0, 1, 4, 4))
+                              "Расчёт расхода сырья по деманду", (4, 0, 1, 4, 4))
 
     elif mode in SIMPLE_MODS:
         pass

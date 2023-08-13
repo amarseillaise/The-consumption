@@ -25,6 +25,7 @@ class MainWindow:
         self.main_window.resizable(False, False)
         self.main_window.title("Выбор категории")
         self.main_window["bg"] = GREY
+        self.main_window.iconbitmap(default="Setup/logo-mission-2020.ico")
 
         # Category table
 
