@@ -115,7 +115,7 @@ def get_fact_intake_calculate(mode, path_to_target_file, progress_var):
                 act_sku = collected_data[0][j]
                 act_qnt = int(collected_data[1][j])
 
-                if NAMES_SHEETS_IN_SIMPLE_MOD.get(mode) == "КАРТОН":
+                if NAMES_SHEETS_IN_SIMPLE_MOD.get(mode) in ("КАРТОН", "ПЛЕНКА"):
 
                     if str(val) == str(act_sku):
                         if target_sheet.cell(row=i + 2, column=day - 1).value is not None:

@@ -6,7 +6,7 @@ import datetime
 from intake_by_plan_corrug_calculate import get_intake_by_plan_corrug_calculate
 from intake_by_forecast_corrug_calculate import get_intake_by_forecast_corrug_calculate
 from fact_intake_calculate import get_fact_intake_calculate
-from demand_by_sap_raw_film_intake_calculate import getRawConsumption
+from demand_by_sap_raw_film_intake_calculate import get_demand_by_sap_raw_film_intake_calculate
 
 import openpyxl
 
@@ -161,7 +161,7 @@ def transfer_data(choise, list, arr, file_src, file_trg, destroy):
             destroy.destroy()
             raise SystemExit
     elif choise == 4:
-        getRawConsumption(file_trg)
+        get_demand_by_sap_raw_film_intake_calculate(file_trg)
     elif choise == 5:
         try:
             get_fact_intake_calculate(file_trg)

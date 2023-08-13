@@ -18,65 +18,53 @@ def init_files_to_gui(mode: int, manual_path_to_source_file=""):
         "window_title": ""
     }
 
+    def collect_data(target_name_sheet_key, source_name_sheet_key, executing_func,
+                     window_title_name, indexes):
+
+        path_to_target_file = ""
+        if not manual_path_to_source_file:
+            paths_to_files = get_paths_to_files()
+            path_to_target_file = paths_to_files.get(target_name_sheet_key)
+            path_to_source_file = paths_to_files.get(source_name_sheet_key)
+        else:
+            path_to_source_file = manual_path_to_source_file
+
+        if path_to_source_file:
+            got_data = executing_func(path_to_source_file)
+
+            pre_result = []
+            for i in range(len(got_data[0])):
+                pre_result.append((ExcelDayInfo(i + 1, got_data[indexes[0]][i], got_data[indexes[1]][i],
+                                                got_data[indexes[2]][i], got_data[indexes[3]][i],
+                                                got_data[indexes[4]][i])))
+            result["day_info"] = pre_result
+            result["path_to_source_file"] = path_to_source_file
+            result["path_to_target_file"] = path_to_target_file
+            result["window_title"] = window_title_name
+
+        return result
+
     # CORRUG by production plan
-
     if mode == 0:
-        path_to_target_file = ""
-        if not manual_path_to_source_file:
-            paths_to_files = get_paths_to_files()
-            path_to_target_file = paths_to_files.get("картон.xl")
-            path_to_source_file = paths_to_files.get("план")
-        else:
-            path_to_source_file = manual_path_to_source_file
+        result = collect_data("картон.xl", "план", get_corrug_calculating_days_from_plan,
+                     "Расчёт расхода картона по плану производства", (3, 0, 4, 1, 2))
 
-        if path_to_source_file:
-            got_data = get_corrug_calculating_days_from_plan(path_to_source_file)
-
-            pre_result = []
-            for i in range(len(got_data[0])):
-                pre_result.append(ExcelDayInfo(i + 1, got_data[3][i], got_data[0][i], "", got_data[1][i], got_data[2][i]))
-            result["day_info"] = pre_result
-            result["path_to_source_file"] = path_to_source_file
-            result["path_to_target_file"] = path_to_target_file
-            result["window_title"] = "Расчёт картона по плану производства"
-
-    # CORRUG by forecast SAP
-
+    # CORRUG by forecast plan
     elif mode == 1:
-        path_to_target_file = ""
-        if not manual_path_to_source_file:
-            paths_to_files = get_paths_to_files()
-            path_to_target_file = paths_to_files.get("картон.xl")
-            path_to_source_file = paths_to_files.get("production")
-        else:
-            path_to_source_file = manual_path_to_source_file
+        result = collect_data("картон.xl", "production", get_corrug_calculating_weeks_from_forecast,
+                     "Расчёт расхода картона по прогнозу", (1, 2, 0, 4, 4))
 
-        if path_to_source_file:
-            got_data = get_corrug_calculating_weeks_from_forecast(path_to_source_file)
+    # FILM by SAP forecast
+    elif mode == 3:
+        result = collect_data("пленка.xl", "weeklyintakebysap", get_film_raw_week_year_from_sap_demand,
+                     "Расчёт расхода плёнки по деманду", (4, 0, 1, 4, 4))
 
-            pre_result = []
-            for i in range(len(got_data[0])):
-                pre_result.append((ExcelDayInfo(i + 1, got_data[1][i], CURRENT_YEAR, got_data[0][i], "", "")))
-            result["day_info"] = pre_result
-            result["path_to_source_file"] = path_to_source_file
-            result["path_to_target_file"] = path_to_target_file
-            result["window_title"] = "Расчёт картона по прогнозу"
+    # RAW by SAP forecast
+    elif mode == 5:
+        result = collect_data("сырье.xl", "weeklyintakebysap", get_film_raw_week_year_from_sap_demand,
+                     "Расчёт расхода сырья по деманду", (4, 0, 1, 4, 4))
 
     elif mode in SIMPLE_MODS:
         pass
-
-        # path_to_target_file = ""
-        # if not manual_path_to_source_file:
-        #     paths_to_files = get_paths_to_files()
-        #     path_to_target_file = paths_to_files.get("картон.xl")
-        #     path_to_source_dir = "./" + NAME_OF_DIR_SAP_DEMAND
-        # else:
-        #     path_to_source_dir = manual_path_to_source_file
-        #     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #     pre_result = []
-        #     for i in os.listdir(path=path_to_source_dir):  # collecting week and day from folder with SAP_load
-        #         pre_result.append(ExcelDayInfo(i + 1, got_data[3][i], got_data[0][i], "", got_data[1][i], got_data[2][i]))
-        #     weeks_for_raw_demand[0].append(str(j[0:4]))
-        #     weeks_for_raw_demand[1].append(str(j[5:7]))
 
     return result

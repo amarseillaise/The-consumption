@@ -2,47 +2,63 @@ import os
 from openpyxl.styles import Font
 import openpyxl
 import datetime
+from constants import *
+from exceptions import *
 
 
-def getRawConsumption(raw_file):
-    now = datetime.datetime.today().strftime("%d.%m")
-    raw = openpyxl.load_workbook(raw_file, data_only=False)
-    raw_s = raw['Сырье']
-    day_array = [[], []]
+def get_demand_by_sap_raw_film_intake_calculate(mode, day_array, path_to_target_file, path_to_source_dir, progress_var):
+    main_offset = 2 if mode == 5 else 4
+    detail_offset = 1 if mode == 5 else -1
+    font_size = 11 if mode == 5 else 8
+    now = datetime.today().strftime("%d.%m")
+    target_file = openpyxl.load_workbook(path_to_target_file, data_only=False)
+    progress_var.put(34)
+    try:
+        target_file_sheet = target_file[SAP_DEMAND_MODS.get(mode)]
+    except KeyError:
+        target_file.close()
+        raise UnableToFindMainSheetInTargetFile(SAP_DEMAND_MODS.get(mode))
     required_dates = [[], []]
 
-    for j in os.listdir(path='WeeklyIntakeBySAP'):  # collecting week and day from folder with SAP_load
-        day_array[0].append(str(j[0:4]))
-        day_array[1].append(str(j[5:7]))
+    progress_var.put(3)
+    for i in range(3, target_file_sheet.max_column):  # detecting coordinates in target_file file (year)
+        val = target_file_sheet.cell(row=2, column=i).value
+        if val:
+            try:
+                if int(val) in day_array[0]:
+                    break
+            except:
+                pass
 
-    for i in range(3, raw_s.max_column):  # detecting coordinates in raw file (year)
-        val = raw_s.cell(row=2, column=i).value
-        if val is not None:
-            if str(val) in day_array[0]:
-                break
-
-    for j in range(i, raw_s.max_column):  # detecting coordinates in raw file (weak)
-        val = str(raw_s.cell(row=2, column=j).value)
+    progress_var.put(3)
+    for j in range(i, target_file_sheet.max_column):  # detecting coordinates in target_file file (week)
+        try:
+            val = int(target_file_sheet.cell(row=2, column=j).value)
+        except:
+            continue
         if val in day_array[1] and val not in required_dates[1]:
             required_dates[0].append(j)
-            required_dates[1].append(val)
+            required_dates[1].append(str(val))
 
-    for raw_demand_path in os.listdir(path='WeeklyIntakeBySAP'):  # Here begin the main cycle
-        demand = openpyxl.load_workbook(os.getcwd() + '/WeeklyIntakeBySAP/' + raw_demand_path, data_only=True)
-        demand_s = demand.worksheets[0]
+    progress_var.put(3)
+    for q in range(len(day_array[0])):
+        sap_demand_file_name = path_to_source_dir + r"\\"[0] + str(day_array[0][q]) + "-" + str(day_array[1][q]) + ".XLSX"
+        sap_demand_file = openpyxl.load_workbook(sap_demand_file_name, data_only=True)
+        progress_var.put(2)
+        sap_demand_file_sheet = sap_demand_file.worksheets[0]
         collected_data = [[], [], []]
 
-        for i in range(2, demand_s.max_row):  # collecting SKU-consumption from SAP load
-            curr_sku = demand_s.cell(row=i, column=1).value
-            curr_quant = int(demand_s.cell(row=i, column=4).value)
+        for i in range(2, sap_demand_file_sheet.max_row):  # collecting SKU-consumption from SAP load
+            curr_sku = sap_demand_file_sheet.cell(row=i, column=1).value
+            curr_quant = int(sap_demand_file_sheet.cell(row=i, column=4).value)
             if curr_quant >= 0:
-                collected_data[0].append(raw_demand_path[5:7])
+                collected_data[0].append(str(day_array[1][q]))
                 collected_data[1].append(curr_sku)
                 collected_data[2].append(curr_quant)
 
-        for i in range(2, raw_s.max_row):  # 5
+        for i in range(2, target_file_sheet.max_row):  # 5
 
-            val = raw_s.cell(row=i, column=2).value
+            val = target_file_sheet.cell(row=i, column=2).value
 
             if str(val) in str(collected_data[1]):
                 # print(i)
@@ -54,45 +70,51 @@ def getRawConsumption(raw_file):
                     act_qnt = collected_data[2][j]
 
                     if str(val) == str(act_sku):
-                        for d in range(7):
-                            if raw_s.cell(row=i - 2,
-                                          column=required_dates[0][
-                                                     required_dates[1].index(
-                                                         act_date)] + d).value is None and "TOTAL" not in str(
-                                raw_s.cell(row=1, column=required_dates[0][required_dates[1].index(
+                        for d in range(3):
+                            if target_file_sheet.cell(row=i - main_offset,
+                                                      column=required_dates[0][
+                                                                 required_dates[1].index(
+                                                                     act_date)] + d).value is None and "TOTAL" not in str(
+                                target_file_sheet.cell(row=1, column=required_dates[0][required_dates[1].index(
                                     act_date)] + d).value):
-                                raw_s.cell(row=i - 2,
-                                           column=required_dates[0][
-                                                      required_dates[1].index(act_date)] + d).value = str(
+                                target_file_sheet.cell(row=i - main_offset,
+                                                       column=required_dates[0][
+                                                                  required_dates[1].index(act_date)] + d).value = str(
                                     act_qnt) + " |" + str(now)
                                 break
 
-                        raw_s.cell(row=i - 2,
-                                   column=required_dates[0][required_dates[1].index(act_date)] + d).font = Font(
-                            color='00008B', bold=False, size=11, name="Arial")
+                        target_file_sheet.cell(row=i - main_offset,
+                                               column=required_dates[0][
+                                                          required_dates[1].index(act_date)] + d).font = Font(
+                            color='00008B', bold=False, size=font_size, name="Arial")
 
                         # Тут начинается точечный расход по дням
                         additional_row = False  # булеан для разделителя месяцев
                         if act_qnt > 0:
                             for h in range(3, 7):
-                                if "TOTAL" in str(raw_s.cell(row=1, column=required_dates[0][required_dates[1].index(
-                                        act_date)] + h).value):
+                                if "TOTAL" in str(
+                                        target_file_sheet.cell(row=1, column=required_dates[0][required_dates[1].index(
+                                            act_date)] + h).value):
                                     additional_row = True
                                     continue
-                                raw_s.cell(row=i + 1,
-                                           column=required_dates[0][required_dates[1].index(act_date)] + h).value = int(
+                                target_file_sheet.cell(row=i + detail_offset,
+                                                       column=required_dates[0][
+                                                                  required_dates[1].index(act_date)] + h).value = int(
                                     act_qnt) / 4
-                                raw_s.cell(row=i + 1,
-                                           column=required_dates[0][required_dates[1].index(act_date)] + h).font = Font(
-                                    color='00008B', bold=False, size=11, name="Arial")
+                                target_file_sheet.cell(row=i + detail_offset,
+                                                       column=required_dates[0][
+                                                                  required_dates[1].index(act_date)] + h).font = Font(
+                                    color='00008B', bold=False, size=font_size, name="Arial")
                             if additional_row:
-                                raw_s.cell(row=i + 1,
-                                           column=required_dates[0][
-                                                      required_dates[1].index(act_date)] + h + 1).value = int(
+                                target_file_sheet.cell(row=i + detail_offset,
+                                                       column=required_dates[0][
+                                                                  required_dates[1].index(
+                                                                      act_date)] + h + 1).value = int(
                                     act_qnt) / 4
-                                raw_s.cell(row=i + 1,
-                                           column=required_dates[0][
-                                                      required_dates[1].index(act_date)] + h + 1).font = Font(
-                                    color='00008B', bold=False, size=11, name="Arial")
+                                target_file_sheet.cell(row=i + detail_offset,
+                                                       column=required_dates[0][
+                                                                  required_dates[1].index(
+                                                                      act_date)] + h + 1).font = Font(
+                                    color='00008B', bold=False, size=font_size, name="Arial")
 
-    raw.save(raw_file)
+    target_file.save(path_to_target_file)

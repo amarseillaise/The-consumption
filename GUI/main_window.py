@@ -43,12 +43,16 @@ class MainWindow:
                                           lambda: self.show_calculating_window(0, clear_table=True),
                                           lambda: self.show_calculating_window(1, clear_table=True),
                                           lambda: self.show_calculating_window(2, clear_table=True))
-            elif selected_category == "Сырьё":
-                self.change_category_menu("Расчёт сырья", "По деманду", "Фактические остатки",
-                                          None, lambda: print(1), lambda: print(2), None)
             elif selected_category == "Плёнка":
-                self.change_category_menu("Расчёт плёнки", "По деманду", "Фактические остатки",
-                                          None, lambda: print(1), lambda: print(2), None)
+                self.change_category_menu("Расчёт плёнки", "По деманду", "Фактические остатки", None,
+                                          lambda: self.show_calculating_window(3, clear_table=True),
+                                          lambda: self.show_calculating_window(4, clear_table=True),
+                                          None)
+            elif selected_category == "Сырьё":
+                self.change_category_menu("Расчёт сырья", "По деманду", "Фактические остатки", None,
+                                          lambda: self.show_calculating_window(5, clear_table=True),
+                                          lambda: self.show_calculating_window(6, clear_table=True),
+                                          None)
 
         self.category_table.heading('# 1', text="Категория")
         self.category_table.column('# 1', width=80)
@@ -199,7 +203,15 @@ class MainWindow:
 
     def show_calculating_window(self, mode, manual_path_to_source_file="", clear_table=True):
 
+        # Name of the button depend on mode
+
+        if mode in SAP_DEMAND_MODS.keys():
+            self.calculating_window_link.source_file_button.config(text="Выбрать папку")
+        else:
+            self.calculating_window_link.source_file_button.config(text="Выбрать источник")
+
         # first clean the table if it almost has info
+
         if self.calculating_window_link.current_window_mode != mode:
             self.calculating_window_link.empty_window()
         if clear_table:
@@ -268,11 +280,18 @@ class MainWindow:
         def select_and_reinit_source_file():
             self.calculating_window_link.source_file_path_field.config(state="normal")
             self.calculating_window_link.source_file_path_field.delete(0, "end")
-            self.calculating_window_link.source_file_path_field.insert(0, filedialog.askopenfilename(
-                initialdir="..",
-                title="Выберите источник",
-                filetypes=EXCEL_FILE_EXTENSIONS,
-            )
+            if mode in SAP_DEMAND_MODS.keys():
+                self.calculating_window_link.source_file_path_field.insert(0, filedialog.askdirectory(
+                    initialdir="..",
+                    title="Выберите источник"
+                )
+                                                                           )
+            else:
+                self.calculating_window_link.source_file_path_field.insert(0, filedialog.askopenfilename(
+                    initialdir="..",
+                    title="Выберите источник",
+                    filetypes=EXCEL_FILE_EXTENSIONS
+                )
                                                                        )
             self.calculating_window_link.source_file_path_field.config(state="readonly")
 
