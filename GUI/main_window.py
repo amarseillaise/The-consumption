@@ -25,7 +25,7 @@ class MainWindow:
         self.main_window.resizable(False, False)
         self.main_window.title("Выбор категории")
         self.main_window["bg"] = GREY
-        self.main_window.iconbitmap(default="Setup/logo-mission-2020.ico")
+        self.main_window.iconbitmap(LOGO_PATH)
 
         # Category table
 
@@ -38,8 +38,8 @@ class MainWindow:
 
         def change_category(event):
             selected_category = self.category_table.item(self.category_table.selection()[0])["values"][0]
-            if selected_category == "Упаковка":
-                self.change_category_menu("Расчёт упаковки", "По плану производства", "По прогнозу",
+            if selected_category == "Картон":
+                self.change_category_menu("Расчёт картона", "По плану производства", "По прогнозу",
                                           "Фактические остатки",
                                           lambda: self.show_calculating_window(0, clear_table=True),
                                           lambda: self.show_calculating_window(1, clear_table=True),

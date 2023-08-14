@@ -11,11 +11,12 @@ MAIN_WINDOW_IPADX = 5
 MAIN_WINDOW_IPADY = 5
 CURRENT_YEAR = int(datetime.today().strftime("%Y"))
 CURRENT_WEEK = int(datetime.today().strftime("%W"))
+LOGO_PATH = "./Setup/logo-mission-2020.ico"
 FONT_STYLE = "Calibri 12"
 TODAY = datetime.today().strftime("%Y-%m-%d") + " 00:00:00"
 VALUES_FOR_HEADINGS_TABLE = ("Column", "Year", "Week", "Month", "Day")
 TABLE_COLUMNS_WIDTH = 110
-VALUES_FOR_CATEGORY_TABLE = (("Упаковка",), ("Плёнка",), ("Сырьё",))
+VALUES_FOR_CATEGORY_TABLE = (("Картон",), ("Плёнка",), ("Сырьё",))
 EXCEL_FILE_EXTENSIONS = (("Excel files", "*.xlsx"), ("Excel files", "*.xls"),
                          ("Excel files", "*.xlsm"), ("Excel files", "*.xlsb"))
 

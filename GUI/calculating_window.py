@@ -20,6 +20,7 @@ class CalculatingWindow:
         self.calculating_window.resizable(False, False)
         self.calculating_window.title("Расчёт")
         self.calculating_window["bg"] = GREY
+        self.calculating_window.iconbitmap(LOGO_PATH)
 
         # Target file button
 

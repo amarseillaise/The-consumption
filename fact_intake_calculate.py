@@ -132,13 +132,14 @@ def get_fact_intake_calculate(mode, path_to_target_file, progress_var):
                                 target_sheet_formula.cell(row=i - 1, column=day).value = int(
                                     target_sheet.cell(row=i, column=day - 1).value) - act_qnt
                         if target_sheet_formula.cell(row=i - 1, column=day).value is not None:
-                            if int(target_sheet_formula.cell(row=i - 1, column=day).value) < 0:
-                                target_sheet_formula.cell(row=i - 1, column=day).font = Font(
-                                    color='7030A0', bold=False, size=9, name="Arial")
-                            else:
-                                target_sheet_formula.cell(row=i - 1, column=day).font = Font(color='C00000', bold=False,
-                                                                                             size=9,
-                                                                                             name="Arial")
+                            if str(target_sheet_formula.cell(row=i - 1, column=day).value)[0] != "=":
+                                if int(target_sheet_formula.cell(row=i - 1, column=day).value) < 0:
+                                    target_sheet_formula.cell(row=i - 1, column=day).font = Font(
+                                        color='7030A0', bold=False, size=9, name="Arial")
+                                else:
+                                    target_sheet_formula.cell(row=i - 1, column=day).font = Font(color='C00000', bold=False,
+                                                                                                 size=9,
+                                                                                                 name="Arial")
                         target_sheet_formula.cell(row=i, column=day).font = Font(bold=True, size=9, name="Arial")
 
                 elif NAMES_SHEETS_IN_SIMPLE_MOD.get(mode) == "Сырье":
@@ -153,13 +154,14 @@ def get_fact_intake_calculate(mode, path_to_target_file, progress_var):
                                 target_sheet_formula.cell(row=i + 1, column=day).value = int(
                                     target_sheet.cell(row=i + 2, column=day - 1).value) - act_qnt
                             if target_sheet_formula.cell(row=i + 1, column=day).value is not None:
-                                if int(target_sheet_formula.cell(row=i + 1, column=day).value) < 0:
-                                    target_sheet_formula.cell(row=i + 1, column=day).font = Font(
-                                        color='7030A0', bold=False, size=11, name="Arial")
-                                else:
-                                    target_sheet_formula.cell(row=i + 1, column=day).font = Font(color='C00000',
-                                                                                                 bold=False, size=11,
-                                                                                                 name="Arial")
+                                if str(target_sheet_formula.cell(row=i + 1, column=day).value)[0] != "=":
+                                    if int(target_sheet_formula.cell(row=i + 1, column=day).value) < 0:
+                                        target_sheet_formula.cell(row=i + 1, column=day).font = Font(
+                                            color='7030A0', bold=False, size=11, name="Arial")
+                                    else:
+                                        target_sheet_formula.cell(row=i + 1, column=day).font = Font(color='C00000',
+                                                                                                     bold=False, size=11,
+                                                                                                     name="Arial")
                         target_sheet_formula.cell(row=i + 2, column=day).font = Font(bold=True, size=11, name="Arial")
 
     progress_var.put(3)
