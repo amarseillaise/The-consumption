@@ -151,8 +151,13 @@ def get_fact_intake_calculate(mode, path_to_target_file, progress_var):
                                     target_sheet.cell(row=i + 2, column=day - 1).value) + target_sheet.cell(row=i + 3,
                                                                                                             column=day - 1).value - act_qnt
                             else:
-                                target_sheet_formula.cell(row=i + 1, column=day).value = int(
-                                    target_sheet.cell(row=i + 2, column=day - 1).value) - act_qnt
+                                try:
+                                    target_sheet_formula.cell(row=i + 1, column=day).value = int(
+                                        target_sheet.cell(row=i + 2, column=day - 1).value) - act_qnt
+                                except TypeError:
+                                    target_file.close()
+                                    target_file_formula.close()
+                                    raise OpenCloseFileException(path_to_target_file)
                             if target_sheet_formula.cell(row=i + 1, column=day).value is not None:
                                 if str(target_sheet_formula.cell(row=i + 1, column=day).value)[0] != "=":
                                     if int(target_sheet_formula.cell(row=i + 1, column=day).value) < 0:

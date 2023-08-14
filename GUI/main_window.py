@@ -357,7 +357,7 @@ class MainWindow:
 
                 if executing_thread.is_alive() or not queue_var.empty():
                     try:
-                        progress_value = queue_var.get(timeout=180)
+                        progress_value = queue_var.get(timeout=240)
                     except _queue.Empty:
                         messagebox.showerror("Ошибка!", "Возникла непредвиденная ошибка.")
                         exit(-1)
