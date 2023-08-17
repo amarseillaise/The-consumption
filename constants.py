@@ -16,7 +16,7 @@ FONT_STYLE = "Calibri 12"
 TODAY = datetime.today().strftime("%Y-%m-%d") + " 00:00:00"
 VALUES_FOR_HEADINGS_TABLE = ("Column", "Year", "Week", "Month", "Day")
 TABLE_COLUMNS_WIDTH = 110
-VALUES_FOR_CATEGORY_TABLE = (("Картон",), ("Плёнка",), ("Сырьё",))
+VALUES_FOR_CATEGORY_TABLE = (("Картон",), ("Плёнка",))
 EXCEL_FILE_EXTENSIONS = (("Excel files", "*.xlsx"), ("Excel files", "*.xls"),
                          ("Excel files", "*.xlsm"), ("Excel files", "*.xlsb"))
 

@@ -42,7 +42,8 @@ def get_demand_by_sap_raw_film_intake_calculate(mode, day_array, path_to_target_
 
     progress_var.put(3)
     for q in range(len(day_array[0])):
-        sap_demand_file_name = path_to_source_dir + r"\\"[0] + str(day_array[0][q]) + "-" + str(day_array[1][q]) + ".XLSX"
+        sap_demand_file_name = path_to_source_dir + r"\\"[0] + str(day_array[0][q]) + "-" + str(
+            day_array[1][q]) + ".XLSX"
         sap_demand_file = openpyxl.load_workbook(sap_demand_file_name, data_only=True)
         progress_var.put(2)
         sap_demand_file_sheet = sap_demand_file.worksheets[0]
@@ -89,32 +90,21 @@ def get_demand_by_sap_raw_film_intake_calculate(mode, day_array, path_to_target_
                             color='00008B', bold=False, size=font_size, name="Arial")
 
                         # Тут начинается точечный расход по дням
-                        additional_row = False  # булеан для разделителя месяцев
                         if act_qnt > 0:
-                            for h in range(3, 7):
-                                if "TOTAL" in str(
-                                        target_file_sheet.cell(row=1, column=required_dates[0][required_dates[1].index(
-                                            act_date)] + h).value):
-                                    additional_row = True
-                                    continue
-                                target_file_sheet.cell(row=i + detail_offset,
-                                                       column=required_dates[0][
-                                                                  required_dates[1].index(act_date)] + h).value = int(
-                                    act_qnt) / 4
-                                target_file_sheet.cell(row=i + detail_offset,
-                                                       column=required_dates[0][
-                                                                  required_dates[1].index(act_date)] + h).font = Font(
-                                    color='00008B', bold=False, size=font_size, name="Arial")
-                            if additional_row:
-                                target_file_sheet.cell(row=i + detail_offset,
-                                                       column=required_dates[0][
-                                                                  required_dates[1].index(
-                                                                      act_date)] + h + 1).value = int(
-                                    act_qnt) / 4
-                                target_file_sheet.cell(row=i + detail_offset,
-                                                       column=required_dates[0][
-                                                                  required_dates[1].index(
-                                                                      act_date)] + h + 1).font = Font(
-                                    color='00008B', bold=False, size=font_size, name="Arial")
+                            day_of_week = 2  # wednesday
+                            if "TOTAL" in str(
+                                    target_file_sheet.cell(row=1, column=required_dates[0][required_dates[1].index(
+                                        act_date)] + day_of_week).value):
+                                day_of_week += 1
+                            target_file_sheet.cell(row=i + detail_offset,
+                                                   column=required_dates[0][
+                                                              required_dates[1].index(
+                                                                  act_date)] + day_of_week).value = int(
+                                act_qnt)
+                            target_file_sheet.cell(row=i + detail_offset,
+                                                   column=required_dates[0][
+                                                              required_dates[1].index(
+                                                                  act_date)] + day_of_week).font = Font(
+                                color='00008B', bold=False, size=font_size, name="Arial")
 
     target_file.save(path_to_target_file)
