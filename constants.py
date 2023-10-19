@@ -16,7 +16,8 @@ FONT_STYLE = "Calibri 12"
 TODAY = datetime.today().strftime("%Y-%m-%d") + " 00:00:00"
 VALUES_FOR_HEADINGS_TABLE = ("Column", "Year", "Week", "Month", "Day")
 TABLE_COLUMNS_WIDTH = 110
-VALUES_FOR_CATEGORY_TABLE = (("Картон",), ("Плёнка",))
+VALUES_FOR_CATEGORY_TABLE = (("Картон",), ("Плёнка",), ("Сырьё",))
+# VALUES_FOR_CATEGORY_TABLE = (("Картон",), ("Плёнка",)) # Limited version for Alina
 EXCEL_FILE_EXTENSIONS = (("Excel files", "*.xlsx"), ("Excel files", "*.xls"),
                          ("Excel files", "*.xlsm"), ("Excel files", "*.xlsb"))
 
@@ -33,7 +34,7 @@ MODE = {
 SIMPLE_MODS = (2, 4, 6)
 SAP_DEMAND_MODS = {
     3: "ПЛЕНКА",
-    5: "Сырье"
+    5: "Сырье",
 }
 NAMES_SHEETS_IN_SIMPLE_MOD = {
     2: "КАРТОН",

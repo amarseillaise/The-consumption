@@ -42,8 +42,8 @@ def get_demand_by_sap_raw_film_intake_calculate(mode, day_array, path_to_target_
 
     progress_var.put(3)
     for q in range(len(day_array[0])):
-        sap_demand_file_name = path_to_source_dir + r"\\"[0] + str(day_array[0][q]) + "-" + str(
-            day_array[1][q]) + ".XLSX"
+        week = str(day_array[1][q]) if len(str(day_array[1][q])) == 2 else str("0" + str(day_array[1][q]))  # Fix from 19.10.2023
+        sap_demand_file_name = path_to_source_dir + r"\\"[0] + str(day_array[0][q]) + "-" + week + ".XLSX"
         sap_demand_file = openpyxl.load_workbook(sap_demand_file_name, data_only=True)
         progress_var.put(2)
         sap_demand_file_sheet = sap_demand_file.worksheets[0]
